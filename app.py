@@ -1,0 +1,16 @@
+import streamlit as st
+
+from settings import DOMAIN
+from elements.magic import get_headers, post_compile
+
+
+@post_compile('ko2cn', DOMAIN)
+def main():
+    st.sidebar.title('Navigation')
+    st.sidebar.text('This is some text.')
+    st.title('This is a title')
+    st.code(get_headers(), language='python')
+
+
+if __name__ == '__main__':
+    main()
