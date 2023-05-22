@@ -4,7 +4,7 @@ from functools import wraps
 import streamlit as st
 from streamlit.server.server import Server
 from streamlit.scriptrunner.script_run_context import get_script_run_ctx
-
+import extra_streamlit_components as stx
 
 def hide_menu():
     hide_menu_style = """
@@ -44,6 +44,15 @@ def get_headers() -> Dict:
         st.markdown("Unable to get session websocket. Please refresh the page.")
         st.stop()
     return session_info.ws.request.headers
+
+
+def get_cookie_manager():
+    return stx.CookieManager()
+
+
+def get_cookie_val(key: str) -> str:
+    cookie_manager = get_cookie_manager()
+    return cookie_manager.get(cookie=key)
 
 
 def post_compile(title: str, domain: str):
