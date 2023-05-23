@@ -17,7 +17,7 @@ class Engine(Login):
         self.language = ''
 
     def menu(self):
-        # st.sidebar.text(self.username)
+        st.sidebar.text(self.username)
         st.sidebar.title('Menu')
         self.project = st.sidebar.selectbox('Poject', ('project1', 'project2'))
         self.input_type = st.sidebar.selectbox("Input Type", ('Text', 'File'))
