@@ -1,10 +1,14 @@
 import streamlit as st
 
 from settings import WHITE_MEMBERS
+from elements.magic import Login
+from exceptions import LoginFailedError
+from log import logger
 
 
-class Project:
+class Project(Login):
     def __init__(self):
+        super(Project, self).__init__()
         self.is_new = None
 
     def toolbar(self):
@@ -48,7 +52,10 @@ class Project:
 
 
 def main():
-    Project().render()
+    try:
+        Project().render()
+    except LoginFailedError:
+        logger.error('login failed')
 
 
 if __name__ == '__main__':

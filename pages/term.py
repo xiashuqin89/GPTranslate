@@ -1,9 +1,14 @@
 import streamlit as st
 from PIL import Image
 
-class Term:
+from elements.magic import Login
+from exceptions import LoginFailedError
+from log import logger
+
+
+class Term(Login):
     def __init__(self):
-        pass
+        super(Term, self).__init__()
 
     def siderbar(self):
         st.sidebar.title('Template')
@@ -33,4 +38,12 @@ class Term:
         self.data()
 
 
-Term().render()
+def main():
+    try:
+        Term().render()
+    except LoginFailedError:
+        logger.error('login failed')
+
+
+if __name__ == '__main__':
+    main()

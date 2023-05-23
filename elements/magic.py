@@ -6,6 +6,10 @@ from streamlit.server.server import Server
 from streamlit.scriptrunner.script_run_context import get_script_run_ctx
 import extra_streamlit_components as stx
 
+from settings import LOGIN_URL
+from exceptions import LoginFailedError
+
+
 def hide_menu():
     hide_menu_style = """
             <style>
@@ -65,3 +69,21 @@ def post_compile(title: str, domain: str):
             func(*args, **kwargs)
         return wrapper
     return deco
+
+
+class Login:
+    def __init__(self):
+        self.username = get_cookie_val("bk_uid")
+        self.authenticate()
+
+    def debug(self):
+        st.code(get_headers(), language='python')
+
+    def authenticate(self):
+        print('fuck....')
+        if not self.username:
+            st.write(f'''<h1>
+            Please login via <a target="_self"
+            href="{LOGIN_URL}">Login</a></h1>''', unsafe_allow_html=True)
+            self.debug()
+            raise LoginFailedError

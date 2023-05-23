@@ -3,22 +3,21 @@ from langdetect import detect
 
 from settings import DOMAIN
 from elements.magic import (
-    get_headers, post_compile, get_cookie_val
+    post_compile, Login
 )
+from exceptions import LoginFailedError
+from log import logger
 
 
-class Engine:
+class Engine(Login):
     def __init__(self):
-        self.username = get_cookie_val("t_uid")
+        super(Engine, self).__init__()
         self.input_type = 'Text'
         self.project = ''
         self.language = ''
 
-    def debug(self):
-        st.code(get_headers(), language='python')
-
     def menu(self):
-        st.sidebar.text(self.username)
+        # st.sidebar.text(self.username)
         st.sidebar.title('Menu')
         self.project = st.sidebar.selectbox('Poject', ('project1', 'project2'))
         self.input_type = st.sidebar.selectbox("Input Type", ('Text', 'File'))
@@ -61,7 +60,10 @@ class Engine:
 
 @post_compile('ko2cn', DOMAIN)
 def main():
-    Engine().render()
+    try:
+        Engine().render()
+    except LoginFailedError:
+        logger.error('login failed')
 
 
 if __name__ == '__main__':
