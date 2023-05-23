@@ -1,10 +1,10 @@
 import os
 import json
-import logging
 
 import redis
 
-logger = logging.getLogger("app")
+from log import logger
+from settings import REDIS_DB_NAME, REDIS_DB_PASSWORD, REDIS_DB_PORT
 
 
 class RedisClient:
@@ -23,9 +23,9 @@ class RedisClient:
                 host=self.host, port=self.port, db=self.db_name, decode_responses=True
             )
         else:
-            self.host = os.getenv('REDIS_DB_NAME', '')
-            self.password = os.getenv('REDIS_DB_PASSWORD', '')
-            self.port = os.getenv('REDIS_DB_PORT', '')
+            self.host = REDIS_DB_NAME
+            self.password = REDIS_DB_PASSWORD
+            self.port = REDIS_DB_PORT
             self.redis_client = redis.Redis(
                 host=self.host,
                 password=self.password,

@@ -13,7 +13,7 @@ class Term(Login):
     def siderbar(self):
         st.sidebar.title('Template')
         image = Image.open('media/term_template.png')
-        st.sidebar.image(image, caption='Sunrise by the mountains')
+        st.sidebar.image(image, caption='edit excel like this')
 
     def toolbar(self):
         uploaded_file = st.file_uploader("Choose a excel file",
