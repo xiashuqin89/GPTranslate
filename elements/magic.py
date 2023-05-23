@@ -2,8 +2,7 @@ from typing import Dict, Callable
 from functools import wraps
 
 import streamlit as st
-from streamlit.server.server import Server
-from streamlit.scriptrunner.script_run_context import get_script_run_ctx
+from streamlit.web.server.websocket_headers import _get_websocket_headers
 import extra_streamlit_components as stx
 
 from settings import LOGIN_URL
@@ -41,14 +40,9 @@ def init_page(title: str, domain: str):
     )
 
 
-def get_headers() -> Dict:
-    session_id = get_script_run_ctx().session_id
-    server = Server.get_current()
-    session_info = server._get_session_info(session_id)
-    if session_info.ws is None:
-        st.markdown("Unable to get session websocket. Please refresh the page.")
-        st.stop()
-    return session_info.ws.request.headers
+def get_headers():
+    # Hack to get the session object from Streamlit.
+    return _get_websocket_headers()
 
 
 def get_cookie_manager():
@@ -77,7 +71,7 @@ class Login:
         self.authenticate()
 
     def debug(self):
-        st.code(get_headers(), language='python')
+        st.json(get_headers())
 
     def authenticate(self):
         if not self.username:
