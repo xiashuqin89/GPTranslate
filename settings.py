@@ -1,5 +1,5 @@
 import os
 
 
-DOMAIN = os.getenv('DOMAIN', 'https://iwiki.woa.com')
-WHITE_MEMBERS = os.getenv('WHITE_MEMBERS', ['neolei', 'dolphzhang'])
+DOMAIN = os.getenv('DOMAIN', '')
+WHITE_MEMBERS = os.getenv('WHITE_MEMBERS', '').split(',')
