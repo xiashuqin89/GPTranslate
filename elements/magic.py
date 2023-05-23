@@ -27,6 +27,7 @@ def hide_footer():
 def init_page(title: str, domain: str):
     st.set_page_config(
         page_title=title,
+        layout='wide',
         initial_sidebar_state="expanded",
         menu_items={
             'Get Help': domain,
