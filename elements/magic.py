@@ -80,7 +80,6 @@ class Login:
         st.code(get_headers(), language='python')
 
     def authenticate(self):
-        print('fuck....')
         if not self.username:
             st.write(f'''<h1>
             Please login via <a target="_self"
