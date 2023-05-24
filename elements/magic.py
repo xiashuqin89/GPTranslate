@@ -68,7 +68,7 @@ def post_compile(title: str, domain: str):
 class Login:
     def __init__(self):
         self.username = get_cookie_val("bk_uid")
-        self.authenticate()
+        # self.authenticate()
 
     def debug(self):
         st.json(get_headers())

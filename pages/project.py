@@ -24,7 +24,7 @@ class Project(Login):
     def toolbar(self):
         tool_col1, tool_col2, _ = st.columns([2, 2, 8])
         with tool_col1:
-            self.is_new = st.button('New')
+            self.is_new = st.button('Add')
             if self.is_new:
                 if not st.session_state.get('is_new'):
                     st.session_state['is_new'] = True
@@ -58,6 +58,7 @@ class Project(Login):
         """
         st.markdown(hide_table_row_index, unsafe_allow_html=True)
         project = self.rc.redis_client.hvals(f'{APP_CODE}:{APP_ENV}:project:{self.username}')
+        st.subheader('Project')
         st.table([json.loads(item) for item in project])
 
     def render(self):

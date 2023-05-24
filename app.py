@@ -36,8 +36,7 @@ class Engine(Login):
     def menu(self):
         st.sidebar.text(self.username)
         st.sidebar.title('Menu')
-        project = self.rc.redis_client.hvals(f'{APP_CODE}:{APP_ENV}:project:{self.username}')
-        project = [json.loads(item)['project_name'] for item in project]
+        project = self.get_project()
         self.project = st.sidebar.selectbox('Project', tuple(project))
         self.input_type = st.sidebar.selectbox("Input Type", ('Text', 'File'))
 
@@ -59,7 +58,7 @@ class Engine(Login):
             status = 'waiting for input'
             if user_input != '':
                 status = 'translating...'
-            output = st.text_area('Chinese', placeholder=status)
+            st.text_area('Chinese', user_input, placeholder=status)
 
     def file_translate(self):
         uploaded_file = st.file_uploader("Choose a file")
