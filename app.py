@@ -41,7 +41,7 @@ class Engine(Login):
         self.input_type = st.sidebar.selectbox("Input Type", ('Text', 'File'))
 
     def text_translate(self):
-        option_col1, option_col2, _ = st.columns([2, 2, 8])
+        option_col1, option_col2, _ = st.columns([2, 4, 6])
         with option_col1:
             language = st.selectbox('', tuple(LANGUAGE))
         with option_col2:
