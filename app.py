@@ -2,6 +2,7 @@ import os
 import json
 
 import streamlit as st
+import diff_viewer
 from langdetect import detect
 
 from settings import DOMAIN, LANGUAGE
@@ -59,7 +60,7 @@ class Engine(Login):
             status = 'waiting for input'
             if user_input != '':
                 status = 'translating...'
-            result = Tmt().translate(SourceText=user_input, Source='zh', Target='en', ProjectId=0)
+            result = Tmt().translate(SourceText=user_input, Source=language, Target='zh', ProjectId=0)
             st.text_area('Chinese', result.get('TargetText', ''), placeholder=status)
 
     def file_translate(self):
@@ -68,8 +69,11 @@ class Engine(Login):
             # To read file as bytes:
             msg = st.empty()
             msg.info('translating...')
-            bytes_data = uploaded_file.getvalue()
-            st.write(bytes_data)
+            # bytes_data = uploaded_file.getvalue()
+            # st.write(bytes_data)
+            diff_viewer.diff_viewer(old_text='This is a old text',
+                                    new_text='This is a new text',
+                                    lang='python')
 
     def render(self):
         self.menu()

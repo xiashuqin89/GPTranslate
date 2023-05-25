@@ -1,8 +1,8 @@
 streamlit
 streamlit-aggrid
+streamlit-diff-viewer
 extra-streamlit-components
 langdetect
-streamlit-card
 openpyxl
 tencentcloud-sdk-python
 redis==3.5.3
