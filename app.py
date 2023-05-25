@@ -8,6 +8,7 @@ from settings import DOMAIN, LANGUAGE
 from elements.magic import (
     post_compile, Login
 )
+from api.qcloud import Tmt
 from exceptions import LoginFailedError
 from utils.db import RedisClient
 from log import logger
@@ -58,7 +59,8 @@ class Engine(Login):
             status = 'waiting for input'
             if user_input != '':
                 status = 'translating...'
-            st.text_area('Chinese', user_input, placeholder=status)
+            result = Tmt().translate(SourceText=user_input, Source='zh', Target='en', ProjectId=0)
+            st.text_area('Chinese', result.get('TargetText', ''), placeholder=status)
 
     def file_translate(self):
         uploaded_file = st.file_uploader("Choose a file")
