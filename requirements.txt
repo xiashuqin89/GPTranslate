@@ -3,4 +3,5 @@ streamlit-aggrid
 extra-streamlit-components
 langdetect
 streamlit-card
+openpyxl
 redis==3.5.3
