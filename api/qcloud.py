@@ -9,16 +9,17 @@ from tencentcloud.common.exception.tencent_cloud_sdk_exception import TencentClo
 from tencentcloud.tmt.v20180321 import tmt_client, models
 
 from log import logger
+from settings import (
+    QCLOUD_SECRET_ID as SECRET_ID, QCLOUD_SECRET_KEY as SECRET_KEY
+)
 
 
 class QCloud:
     def __init__(self, product: str, region: str):
-        secret_id = os.getenv('SECRET_ID')
-        secret_key = os.getenv('SECRET_KEY')
         self.region = region
         http_profile = HttpProfile()
         http_profile.endpoint = f"{product}.tencentcloudapi.com"
-        self.cred = credential.Credential(secret_id, secret_key)
+        self.cred = credential.Credential(SECRET_ID, SECRET_KEY)
         self.client_profile = ClientProfile()
         self.client_profile.httpProfile = http_profile
 

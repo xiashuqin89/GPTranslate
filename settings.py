@@ -9,3 +9,6 @@ LANGUAGE = os.getenv('LANGUAGE', 'ko,en').split(',')
 REDIS_DB_NAME = os.getenv('REDIS_DB_NAME', '127.0.0.1')
 REDIS_DB_PASSWORD = os.getenv('REDIS_DB_PASSWORD', '')
 REDIS_DB_PORT = int(os.getenv('REDIS_DB_PORT', '6379'))
+
+QCLOUD_SECRET_ID = os.getenv('QCLOUD_SECRET_ID', '')
+QCLOUD_SECRET_KEY = os.getenv('QCLOUD_SECRET_KEY', '')
