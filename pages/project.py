@@ -35,7 +35,7 @@ class Project(Login):
         with st.form("new_project"):
             st.write("New Project")
             project_name = st.text_input('Project Name')
-            members = st.multiselect('', WHITE_MEMBERS)
+            members = st.multiselect('Members', WHITE_MEMBERS)
 
             st.session_state['project_name'] = project_name
             st.session_state['members'] = members

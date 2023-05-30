@@ -3,6 +3,8 @@ import json
 
 import streamlit as st
 import diff_viewer
+import pandas as pd
+import numpy as np
 from langdetect import detect
 
 from settings import DOMAIN, LANGUAGE
@@ -45,9 +47,9 @@ class Engine(Login):
     def text_translate(self):
         option_col1, option_col2, _ = st.columns([2, 4, 6])
         with option_col1:
-            language = st.selectbox('', tuple(LANGUAGE))
+            language = st.selectbox('language', tuple(LANGUAGE), label_visibility='hidden')
         with option_col2:
-            term = st.multiselect('', self.get_term(self.project))
+            term = st.multiselect('term', self.get_term(self.project), label_visibility='hidden')
 
         input_col1, input_col2 = st.columns(2)
         with input_col1:
@@ -68,12 +70,37 @@ class Engine(Login):
         if uploaded_file is not None:
             # To read file as bytes:
             msg = st.empty()
-            msg.info('translating...')
+            msg.info('Translating...')
             # bytes_data = uploaded_file.getvalue()
-            # st.write(bytes_data)
-            diff_viewer.diff_viewer(old_text='This is a old text',
+            # st.code(bytes_data)
+            df = pd.read_excel(uploaded_file)
+            self.file_download(df)
+            old_text = ''
+            for row in df.values.tolist():
+                for col in row:
+                    if col is np.nan or str(col) == 'nan':
+                        old_text += ' '
+                    else:
+                        old_text += str(col)
+                old_text += '\n'
+
+            diff_viewer.diff_viewer(old_text=old_text,
                                     new_text='This is a new text',
                                     lang='python')
+            msg.success('Translated')
+
+    def file_download(self, df: pd.DataFrame):
+        df.to_excel('media/large_df.xlsx')
+        with open("media/large_df.xlsx", "rb") as file:
+            st.download_button(
+                label="Download data as Excel",
+                data=file,
+                file_name='large_df.xlsx',
+                mime='text/xlsx',
+            )
+
+    def file_parse(self):
+        pass
 
     def render(self):
         self.menu()
