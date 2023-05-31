@@ -1,10 +1,14 @@
 import os
 import json
+from typing import Tuple
 
 import streamlit as st
+from streamlit.runtime.uploaded_file_manager import UploadedFile
+from streamlit.delta_generator import DeltaGenerator
 import diff_viewer
 import pandas as pd
 import numpy as np
+from docx import Document
 from langdetect import detect
 
 from settings import DOMAIN, LANGUAGE
@@ -67,27 +71,35 @@ class Engine(Login):
 
     def file_translate(self):
         uploaded_file = st.file_uploader("Choose a file")
-        if uploaded_file is not None:
-            # To read file as bytes:
-            msg = st.empty()
-            msg.info('Translating...')
-            # bytes_data = uploaded_file.getvalue()
-            # st.code(bytes_data)
-            df = pd.read_excel(uploaded_file)
-            self.file_download(df)
-            old_text = ''
-            for row in df.values.tolist():
-                for col in row:
-                    if col is np.nan or str(col) == 'nan':
-                        old_text += ' '
-                    else:
-                        old_text += str(col)
-                old_text += '\n'
-
-            diff_viewer.diff_viewer(old_text=old_text,
-                                    new_text='This is a new text',
-                                    lang='python')
+        msg = st.empty()
+        result = self.file_parse(uploaded_file, msg)
+        if result:
             msg.success('Translated')
+            diff_viewer.diff_viewer(old_text=result[0],
+                                    new_text='Translating...',
+                                    lang='python')
+
+    def file_parse(self, uploaded_file: UploadedFile, msg: DeltaGenerator) -> Tuple:
+        if uploaded_file is not None:
+            msg.info('Translating...')
+            pure_text, bytes_data = '', uploaded_file.getvalue()
+            # st.code(bytes_data)
+            if uploaded_file.name.endswith('xlsx'):
+                df = pd.read_excel(uploaded_file)
+                self.file_download(df)
+                for row in df.values.tolist():
+                    for col in row:
+                        if col is np.nan or str(col) == 'nan':
+                            pure_text += ' '
+                        else:
+                            pure_text += str(col)
+                    pure_text += '\n'
+            elif uploaded_file.name.endswith('docx'):
+                import io
+                source_stream = Document(io.BytesIO(bytes_data))
+                pure_text = '\n'.join([para.text for para in source_stream.paragraphs])
+            return pure_text, bytes_data
+        return None
 
     def file_download(self, df: pd.DataFrame):
         df.to_excel('media/large_df.xlsx')
@@ -98,9 +110,6 @@ class Engine(Login):
                 file_name='large_df.xlsx',
                 mime='text/xlsx',
             )
-
-    def file_parse(self):
-        pass
 
     def render(self):
         self.menu()

@@ -4,5 +4,6 @@ streamlit-diff-viewer
 extra-streamlit-components
 langdetect
 openpyxl
+python-docx
 tencentcloud-sdk-python
 redis==3.5.3
