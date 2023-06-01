@@ -11,7 +11,7 @@ import numpy as np
 from docx import Document
 from langdetect import detect
 
-from settings import DOMAIN, LANGUAGE
+from settings import DOMAIN, LANGUAGE, MODEL
 from elements.magic import (
     post_compile, Login
 )
@@ -49,10 +49,12 @@ class Engine(Login):
         self.input_type = st.sidebar.selectbox("Input Type", ('Text', 'File'))
 
     def text_translate(self):
-        option_col1, option_col2, _ = st.columns([2, 4, 6])
+        option_col1, option_col2, option_col3, _ = st.columns([2, 2, 4, 4])
         with option_col1:
-            language = st.selectbox('language', tuple(LANGUAGE), label_visibility='hidden')
+            model = st.selectbox('model', tuple(MODEL))
         with option_col2:
+            language = st.selectbox('lang', tuple(LANGUAGE))
+        with option_col3:
             term = st.multiselect('term', self.get_term(self.project), label_visibility='hidden')
 
         input_col1, input_col2 = st.columns(2)
