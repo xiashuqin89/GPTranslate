@@ -4,3 +4,7 @@ class Error(Exception):
 
 class LoginFailedError(Error):
     pass
+
+
+class ActionFailed(Error):
+    pass
