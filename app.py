@@ -68,9 +68,8 @@ class Engine(Login):
                 st.write(f'Lang:  {language}')
 
         with input_col2:
-            output = st.empty()
             status = 'waiting for input'
-            output.text_area('Chinese', placeholder=status)
+            output = ''
             if user_input != '':
                 status = 'translating...'
                 response = translate({'bk_ticket': self.bk_ticket},
@@ -78,7 +77,8 @@ class Engine(Login):
                                      translate_type=self.model,
                                      term=self.term,
                                      project=self.project)
-                output.text_area('Chinese', response.get('data', {}).get('result'), placeholder=status)
+                output = response.get('data', {}).get('result')
+            st.text_area('Chinese', output, placeholder=status)
 
     def file_translate(self):
         uploaded_file = st.file_uploader("Choose a file")
