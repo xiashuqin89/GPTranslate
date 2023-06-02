@@ -15,7 +15,6 @@ from settings import DOMAIN, LANGUAGE, MODEL
 from elements.magic import (
     post_compile, Login
 )
-from api.qcloud import Tmt
 from api.dolph import translate
 from exceptions import LoginFailedError
 from utils.db import RedisClient
