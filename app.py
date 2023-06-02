@@ -16,6 +16,7 @@ from elements.magic import (
     post_compile, Login
 )
 from api.qcloud import Tmt
+from api.dolph import translate
 from exceptions import LoginFailedError
 from utils.db import RedisClient
 from log import logger
@@ -30,6 +31,8 @@ class Engine(Login):
         self.input_type = 'Text'
         self.project = ''
         self.language = ''
+        self.model = ''
+        self.term = ''
         self.rc = RedisClient(env="prod")
 
     def get_project(self):
@@ -48,15 +51,15 @@ class Engine(Login):
         self.project = st.sidebar.selectbox('Project', tuple(project))
         self.input_type = st.sidebar.selectbox("Input Type", ('Text', 'File'))
 
-    def text_translate(self):
         option_col1, option_col2, option_col3, _ = st.columns([2, 2, 4, 4])
         with option_col1:
-            model = st.selectbox('model', tuple(MODEL))
+            self.model = st.selectbox('model', tuple(MODEL))
         with option_col2:
-            language = st.selectbox('lang', tuple(LANGUAGE))
+            self.language = st.selectbox('lang', tuple(LANGUAGE))
         with option_col3:
-            term = st.multiselect('term', self.get_term(self.project), label_visibility='hidden')
+            self.term = st.multiselect('term', self.get_term(self.project), label_visibility='hidden')
 
+    def text_translate(self):
         input_col1, input_col2 = st.columns(2)
         with input_col1:
             user_input = st.text_area('Your input', height=30)
@@ -65,11 +68,17 @@ class Engine(Login):
                 st.write(f'Lang:  {language}')
 
         with input_col2:
+            output = st.empty()
             status = 'waiting for input'
+            output.text_area('Chinese', placeholder=status)
             if user_input != '':
                 status = 'translating...'
-            result = Tmt().translate(SourceText=user_input, Source=language, Target='zh', ProjectId=0)
-            st.text_area('Chinese', result.get('TargetText', ''), placeholder=status)
+                response = translate({'bk_ticket': self.bk_ticket},
+                                     text=user_input,
+                                     translate_type=self.model,
+                                     term=self.term,
+                                     project=self.project)
+                output.text_area('Chinese', response.get('data', {}).get('result'), placeholder=status)
 
     def file_translate(self):
         uploaded_file = st.file_uploader("Choose a file")
@@ -114,8 +123,8 @@ class Engine(Login):
             )
 
     def render(self):
-        self.menu()
         st.title('Debug')
+        self.menu()
         if self.input_type == 'Text':
             self.text_translate()
         elif self.input_type == 'File':

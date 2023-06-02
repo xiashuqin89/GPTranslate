@@ -67,7 +67,9 @@ def post_compile(title: str, domain: str):
 
 class Login:
     def __init__(self):
-        self.username = get_cookie_val("bk_uid")
+        cookie_manager = get_cookie_manager()
+        self.username = cookie_manager.get(cookie='bk_uid')
+        self.bk_ticket = cookie_manager.get(cookie='bk_ticket')
         self.authenticate()
 
     def debug(self):
