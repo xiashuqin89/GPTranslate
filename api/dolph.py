@@ -11,6 +11,9 @@ def translate(headers: Dict, method='translate', **params):
     """
     text
     translate_type: qcloud/chatgpt
+    file
+    file_name
+    extract_type
     """
     headers.update({'token': DOLPH_TOKEN, 'Content-Type': 'application/json'})
     logger.info(f'headers: {headers}')

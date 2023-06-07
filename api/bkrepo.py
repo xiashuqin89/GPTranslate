@@ -40,3 +40,45 @@ class BKRepo:
 
     def download(self, project: str, repo: str, abs_path: str):
         return self.call_action(f'generic/{project}/{repo}/{abs_path}?download=true', 'get')
+
+    def search(self, rule: Dict):
+        """
+        {
+            "page":{
+                "pageNumber":1,
+                "pageSize":1000
+            },
+            "sort":{
+                "properties":["folder","lastModifiedDate"],
+                "direction":"DESC"
+            },
+            "rule":{
+                "rules":[
+                    {
+                        "field":"projectId",
+                        "value":"opsbot2",
+                        "operation":"EQ"
+                    },
+                    {
+                        "field":"repoName",
+                        "value":"translate",
+                        "operation":"EQ"
+                    },
+                    {
+                        "field":"path",
+                        "value":"/target/",
+                        "operation":"EQ"
+                    }
+                ],
+                "relation":"AND"
+            }
+        }
+        """
+        return self.call_action('repository/api/node/search',
+                                'post',
+                                json={
+                                    "page": {"pageNumber": 1, "pageSize": 1000},
+                                    "sort": {"properties": ["folder", "lastModifiedDate"],
+                                             "direction": "DESC"},
+                                    "rule": rule
+                                })
