@@ -110,8 +110,7 @@ class Engine(Login):
 
     def file_diff(self, record: Dict, msg: DeltaGenerator):
         raw = self.get_record(record['time'])
-        bk_repo = BKRepo()
-        data = bk_repo.search({
+        data = BKRepo().search({
             "rules": [
                 {"field": "projectId", "value": "opsbot2", "operation": "EQ"},
                 {"field": "repoName", "value": "translate", "operation": "EQ"},
@@ -124,7 +123,6 @@ class Engine(Login):
         if data['count'] == 0:
             msg.info('Translate task still running...')
         else:
-            bk_repo.download('opsbot2', 'translate', 'target')
             msg.success('Translated')
             self.file_download()
             diff_viewer.diff_viewer(old_text=raw['pure_text'],
