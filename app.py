@@ -124,7 +124,7 @@ class Engine(Login):
             msg.info('Translate task still running...')
         else:
             msg.success('Translated')
-            self.file_download()
+            self.file_download(record['filename'])
             diff_viewer.diff_viewer(old_text=raw['pure_text'],
                                     new_text='Translating...',
                                     lang='python')
