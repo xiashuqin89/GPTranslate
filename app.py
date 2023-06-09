@@ -165,7 +165,11 @@ class Engine(Login):
     def file_list(self):
         data = self.get_record_list() or {}
         if data:
-            st.write('Record')
+            # st.write('Record')
+            st.divider()
+            st.subheader('Record')
+        else:
+            return
         data = pd.DataFrame([{'time': k, 'filename': json.loads(v)['file_name']} for k, v in data.items()])
         gb = GridOptionsBuilder.from_dataframe(data)
         gb.configure_selection(selection_mode='single')
