@@ -1,3 +1,4 @@
+import json
 from typing import Any, Optional, Dict
 
 import requests
@@ -29,8 +30,8 @@ class BKRepo:
         response = getattr(requests, method)(url, **params)
         try:
             return self._handle_api_result(response.json())
-        except TypeError:
-            return {}
+        except (TypeError, json.JSONDecodeError):
+            return response
 
     def upload(self, project: str, repo: str, abs_path: str, **params):
         """
@@ -38,8 +39,9 @@ class BKRepo:
         """
         return self.call_action(f'generic/{project}/{repo}/{abs_path}', 'put', **params)
 
-    def download(self, project: str, repo: str, abs_path: str):
-        return self.call_action(f'generic/{project}/{repo}/{abs_path}?download=true', 'get')
+    def download(self, project: str, repo: str, abs_path: str, **params):
+        return self.call_action(f'generic/{project}/{repo}/{abs_path}?download=true',
+                                'get', **params)
 
     def search(self, rule: Dict):
         """

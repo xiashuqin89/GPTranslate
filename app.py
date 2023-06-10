@@ -1,24 +1,21 @@
 import os
 import json
 import time
-from typing import Tuple, Dict, SupportsBytes
+from typing import Tuple
 
 import streamlit as st
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 from streamlit.delta_generator import DeltaGenerator
-from st_aggrid import AgGrid, GridUpdateMode, GridOptionsBuilder
-import diff_viewer
 import pandas as pd
 import numpy as np
 from docx import Document
 from langdetect import detect
 
-from settings import DOMAIN, LANGUAGE, MODEL, BK_REPO_ROOT
+from settings import DOMAIN, LANGUAGE, MODEL
 from elements.magic import (
     post_compile, Login
 )
 from api.dolph import translate
-from api.bkrepo import BKRepo
 from exceptions import LoginFailedError
 from utils.db import RedisClient
 from log import logger
@@ -45,16 +42,6 @@ class Engine(Login):
 
     def get_term(self):
         return self.rc.redis_client.hkeys(f'{APP_CODE}:{APP_ENV}:term:{self.project}')
-
-    def get_record_list(self) -> Dict:
-        return self.rc.redis_client.hgetall(f'{APP_CODE}:{APP_ENV}:record:{self.project}:{self.username}')
-
-    def get_record(self, key: str) -> Dict:
-        data = self.rc.hash_get(f'{APP_CODE}:{APP_ENV}:record:{self.project}:{self.username}', key)
-        try:
-            return json.loads(data)
-        except json.JSONDecodeError:
-            return {}
 
     def menu(self):
         st.sidebar.text(self.username)
@@ -108,27 +95,6 @@ class Engine(Login):
                          time.strftime('%Y-%m-%d %H:%M:%S'), json.dumps(params))
         return
 
-    def file_diff(self, record: Dict, msg: DeltaGenerator):
-        raw = self.get_record(record['time'])
-        data = BKRepo().search({
-            "rules": [
-                {"field": "projectId", "value": "opsbot2", "operation": "EQ"},
-                {"field": "repoName", "value": "translate", "operation": "EQ"},
-                {"field": "path", "value": "/target/", "operation": "EQ"},
-                {"field": "name", "value": raw['file_name'], "operation": "EQ"}
-            ],
-            "relation": "AND"
-        })
-
-        if data['count'] == 0:
-            msg.info('Translate task still running...')
-        else:
-            msg.success('Translated')
-            self.file_download(record['filename'])
-            diff_viewer.diff_viewer(old_text=raw['pure_text'],
-                                    new_text='Translating...',
-                                    lang='python')
-
     def file_parse(self, uploaded_file: UploadedFile, msg: DeltaGenerator) -> Tuple:
         if uploaded_file is not None:
             msg.info('Parsing...')
@@ -153,38 +119,6 @@ class Engine(Login):
             return filename, extract_type, pure_text, bytes_data
         return None
 
-    def file_download(self, filename: str):
-        st.markdown(f"""
-            <a href="{BK_REPO_ROOT}/generic/opsbot2/translate/target/{filename}" target = "_blank"> 
-                    
-            </a>
-        """, unsafe_allow_html=True)
-
-    def file_list(self):
-        data = self.get_record_list() or {}
-        if data:
-            # st.write('Record')
-            st.divider()
-            st.subheader('Record')
-        else:
-            return
-        data = pd.DataFrame([{'time': k, 'filename': json.loads(v)['file_name']} for k, v in data.items()])
-        gb = GridOptionsBuilder.from_dataframe(data)
-        gb.configure_selection(selection_mode='single')
-        gb.configure_auto_height()
-        gb.configure_side_bar()
-        gb.configure_pagination(paginationAutoPageSize=False, paginationPageSize=10)
-        go = gb.build()
-        return_ag = AgGrid(data,
-                           enable_quicksearch=True,
-                           gridOptions=go,
-                           allow_unsafe_jscode=True,
-                           reload_data=False,
-                           use_legacy_selected_rows=True,
-                           fit_columns_on_grid_load=True,
-                           update_mode=GridUpdateMode.SELECTION_CHANGED)
-        return return_ag.selected_rows
-
     def render(self):
         st.title('Bkchatranslate')
         self.menu()
@@ -200,9 +134,6 @@ class Engine(Login):
                     msg.success('Task Add')
                 else:
                     msg.warning('Error: plz check your upload file')
-            selected_rows = self.file_list()
-            if selected_rows:
-                self.file_diff(selected_rows[0], msg)
 
 
 @post_compile('ko2cn', DOMAIN)
