@@ -133,7 +133,7 @@ class Engine(Login):
                     self.file_translate(*file_info)
                     msg.success('Task Add')
                 else:
-                    msg.warning('Error: plz check your upload file')
+                    msg.error('Error: plz check your upload file')
 
 
 @post_compile('ko2cn', DOMAIN)

@@ -49,30 +49,31 @@ class Record(Login):
         self.project = st.sidebar.selectbox('Project', tuple(project))
 
     def file_list(self):
-        data = self.get_record_list() or {}
-        if data:
-            st.subheader('Record')
-        else:
-            st.subheader('Record')
-            st.warning('No Record')
-            return
+        with st.spinner('Wait for loading...'):
+            data = self.get_record_list() or {}
+            if data:
+                st.subheader('Record')
+            else:
+                st.subheader('Record')
+                st.warning('No Record')
+                return
 
-        data = pd.DataFrame([{'time': k, 'filename': json.loads(v)['file_name']} for k, v in data.items()])
-        gb = GridOptionsBuilder.from_dataframe(data)
-        gb.configure_selection(selection_mode='single')
-        gb.configure_auto_height()
-        gb.configure_side_bar()
-        gb.configure_pagination(paginationAutoPageSize=False, paginationPageSize=10)
-        go = gb.build()
-        return_ag = AgGrid(data,
-                           enable_quicksearch=True,
-                           gridOptions=go,
-                           allow_unsafe_jscode=True,
-                           reload_data=False,
-                           use_legacy_selected_rows=True,
-                           fit_columns_on_grid_load=True,
-                           update_mode=GridUpdateMode.SELECTION_CHANGED)
-        return return_ag.selected_rows
+            data = pd.DataFrame([{'time': k, 'filename': json.loads(v)['file_name']} for k, v in data.items()])
+            gb = GridOptionsBuilder.from_dataframe(data)
+            gb.configure_selection(selection_mode='single')
+            gb.configure_auto_height()
+            gb.configure_side_bar()
+            gb.configure_pagination(paginationAutoPageSize=False, paginationPageSize=10)
+            go = gb.build()
+            return_ag = AgGrid(data,
+                               enable_quicksearch=True,
+                               gridOptions=go,
+                               allow_unsafe_jscode=True,
+                               reload_data=False,
+                               use_legacy_selected_rows=True,
+                               fit_columns_on_grid_load=True,
+                               update_mode=GridUpdateMode.SELECTION_CHANGED)
+            return return_ag.selected_rows
 
     def file_diff(self, record: Dict, msg: DeltaGenerator):
         raw = self.get_record(record['time'])

@@ -58,10 +58,10 @@ class Project(Login):
         """
         st.markdown(hide_table_row_index, unsafe_allow_html=True)
         project = self.rc.redis_client.hvals(f'{APP_CODE}:{APP_ENV}:project:{self.username}')
-        st.subheader('Project')
         st.table([json.loads(item) for item in project])
 
     def render(self):
+        st.subheader('Project')
         self.toolbar()
         if st.session_state.get('is_new'):
             self.dialog()

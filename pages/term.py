@@ -27,7 +27,7 @@ class Term(Login):
             return []
         return [json.loads(item)['project_name'] for item in project]
 
-    def siderbar(self):
+    def sidebar(self):
         st.sidebar.title('Template')
         image = Image.open('media/term_template.png')
         st.sidebar.image(image, caption='edit excel like this')
@@ -62,7 +62,6 @@ class Term(Login):
             </style>
         """
         st.markdown(hide_table_row_index, unsafe_allow_html=True)
-        st.subheader('Term')
         data = self.rc.redis_client.hgetall(f'{APP_CODE}:{APP_ENV}:term:{self.project}')
         st.table([{'name': name, 'user': self.username} for name in data.keys()])
 
@@ -72,7 +71,8 @@ class Term(Login):
                          name, json.dumps(term))
 
     def render(self):
-        self.siderbar()
+        st.subheader('Term')
+        self.sidebar()
         self.toolbar()
         self.data()
 
