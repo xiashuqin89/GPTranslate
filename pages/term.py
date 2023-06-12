@@ -66,6 +66,7 @@ class Term(Login):
         st.table([{'name': name, 'user': self.username} for name in data.keys()])
 
     def save(self, name: str, term: List[List[str]]):
+        # need to change to true kv mode
         term = {item[0]: item[1] for item in term}
         self.rc.hash_set(f'{APP_CODE}:{APP_ENV}:term:{self.project}',
                          name, json.dumps(term))

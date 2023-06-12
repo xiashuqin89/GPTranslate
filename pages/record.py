@@ -77,7 +77,6 @@ class Record(Login):
 
     def file_diff(self, record: Dict, msg: DeltaGenerator):
         raw = self.get_record(record['time'])
-        raw['file_name'] = '2022_0720_아덴_인벤토리 확장권 아이템 교체 DB작업_한유나.xlsx'
         bk_repo = BKRepo()
         data = bk_repo.search({
             "rules": [
