@@ -96,15 +96,7 @@ class Record(Login):
             bytes_data = response.content
             new_text = ''
             if raw['extract_type'] == 'xlsx':
-                df = pd.read_excel(bytes_data)
-                new_text = ''
-                for row in df.values.tolist():
-                    for col in row:
-                        if col is np.nan or str(col) == 'nan':
-                            new_text += ' '
-                        else:
-                            new_text += str(col)
-                    new_text += '\n'
+                new_text = self.excel2text(bytes_data)
             elif raw['extract_type'] == 'docx':
                 source_stream = Document(io.BytesIO(bytes_data))
                 new_text = '\n'.join([para.text for para in source_stream.paragraphs])
@@ -121,6 +113,20 @@ class Record(Login):
             file_name=filename,
             mime=f'text/{extract_type}',
         )
+
+    def excel2text(self, data: bytes):
+        pure_text = ''
+        sheets = pd.read_excel(data, sheet_name=None)
+        for k, v in sheets.items():
+            pure_text += k
+            for row in v.values.tolist():
+                for col in row:
+                    if col is np.nan or str(col) == 'nan':
+                        pure_text += ' '
+                    else:
+                        pure_text += str(col)
+                pure_text += '\n'
+        return pure_text
 
     def render(self):
         self.siderbar()

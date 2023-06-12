@@ -1,4 +1,5 @@
 import os
+import io
 import json
 import time
 from typing import Tuple
@@ -103,21 +104,27 @@ class Engine(Login):
             extract_type = ''
             if uploaded_file.name.endswith('xlsx'):
                 extract_type = 'xlsx'
-                df = pd.read_excel(uploaded_file)
-                for row in df.values.tolist():
-                    for col in row:
-                        if col is np.nan or str(col) == 'nan':
-                            pure_text += ' '
-                        else:
-                            pure_text += str(col)
-                    pure_text += '\n'
+                pure_text = self.excel2text(uploaded_file)
             elif uploaded_file.name.endswith('docx'):
                 extract_type = 'docx'
-                import io
                 source_stream = Document(io.BytesIO(bytes_data))
                 pure_text = '\n'.join([para.text for para in source_stream.paragraphs])
             return filename, extract_type, pure_text, bytes_data
         return None
+
+    def excel2text(self, data: bytes):
+        pure_text = ''
+        sheets = pd.read_excel(data, sheet_name=None)
+        for k, v in sheets.items():
+            pure_text += k
+            for row in v.values.tolist():
+                for col in row:
+                    if col is np.nan or str(col) == 'nan':
+                        pure_text += ' '
+                    else:
+                        pure_text += str(col)
+                pure_text += '\n'
+        return pure_text
 
     def render(self):
         st.title('Bkchatranslate')
