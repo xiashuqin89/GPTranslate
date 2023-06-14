@@ -14,7 +14,7 @@ from langdetect import detect
 
 from settings import DOMAIN, LANGUAGE, MODEL
 from elements.magic import (
-    post_compile, Login
+    post_compile, Login, nav_page
 )
 from api.dolph import translate
 from exceptions import LoginFailedError
@@ -102,6 +102,7 @@ class Engine(Login):
             pure_text, bytes_data = '', uploaded_file.getvalue()
             filename = uploaded_file.name
             extract_type = ''
+            print(uploaded_file.name)
             if uploaded_file.name.endswith('xlsx'):
                 extract_type = 'xlsx'
                 pure_text = self.excel2text(uploaded_file)
@@ -139,6 +140,7 @@ class Engine(Login):
                 if file_info is not None:
                     self.file_translate(*file_info)
                     msg.success('Task Add')
+                    nav_page('record')
                 else:
                     msg.error('Error: plz check your upload file')
 
