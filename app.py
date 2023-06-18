@@ -36,10 +36,16 @@ class Engine(Login):
         self.rc = RedisClient(env="prod")
 
     def get_project(self):
-        project = self.rc.redis_client.hvals(f'{APP_CODE}:{APP_ENV}:project:{self.username}')
-        if not project:
+        projects = self.rc.redis_client.hvals(f'{APP_CODE}:{APP_ENV}:project')
+        if not projects:
             return []
-        return [json.loads(item)['project_name'] for item in project]
+        try:
+            for item in projects:
+                item = json.loads(item)
+                if self.username in item['members']:
+                    yield item['project_name']
+        except json.JSONDecodeError:
+            return []
 
     def get_term(self):
         return self.rc.redis_client.hkeys(f'{APP_CODE}:{APP_ENV}:term:{self.project}')
@@ -133,7 +139,7 @@ class Engine(Login):
         if self.input_type == 'Text':
             self.text_translate()
         elif self.input_type == 'File':
-            uploaded_file = st.file_uploader("Choose a file")
+            uploaded_file = st.file_uploader("Choose a file", type=['xlsx', 'docx'])
             msg = st.empty()
             if st.button('Submit', use_container_width=True):
                 file_info = self.file_parse(uploaded_file, msg)

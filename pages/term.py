@@ -22,26 +22,31 @@ class Term(Login):
         self.rc = RedisClient(env="prod")
 
     def get_project(self):
-        project = self.rc.redis_client.hvals(f'{APP_CODE}:{APP_ENV}:project:{self.username}')
-        if not project:
+        projects = self.rc.redis_client.hvals(f'{APP_CODE}:{APP_ENV}:project')
+        if not projects:
             return []
-        return [json.loads(item)['project_name'] for item in project]
+        try:
+            for item in projects:
+                item = json.loads(item)
+                if self.username in item['members']:
+                    yield item['project_name']
+        except json.JSONDecodeError:
+            return []
 
     def sidebar(self):
         st.sidebar.title('Template')
         image = Image.open('media/term_template.png')
         st.sidebar.image(image, caption='edit excel like this')
-        project = self.get_project()
-        self.project = st.sidebar.selectbox('Project', tuple(project))
+        project = tuple(self.get_project())
+        self.project = st.sidebar.selectbox('Project', project)
 
     def toolbar(self):
         with st.expander("Add"):
             if self.project == '':
                 st.warning(f'your need select a project')
             else:
-                uploaded_file = st.file_uploader("Choose a excel file",
-                                                 type=['csv', 'xlsx', 'xls'],
-                                                 help='only support csv, xlsx, xls')
+                uploaded_file = st.file_uploader("Choose a excel file", type=['xlsx'],
+                                                 help='only support xlsx')
                 if uploaded_file is not None:
                     msg = st.empty()
                     msg.info('Upload...')

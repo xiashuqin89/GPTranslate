@@ -21,6 +21,18 @@ class Project(Login):
         self.is_new = None
         self.rc = RedisClient(env="prod")
 
+    def get_project(self):
+        projects = self.rc.redis_client.hvals(f'{APP_CODE}:{APP_ENV}:project')
+        if not projects:
+            return []
+        try:
+            for item in projects:
+                item = json.loads(item)
+                if self.username in item['members']:
+                    yield item
+        except json.JSONDecodeError:
+            return []
+
     def toolbar(self):
         tool_col1, tool_col2, _ = st.columns([2, 2, 8])
         with tool_col1:
@@ -44,9 +56,14 @@ class Project(Login):
             if submitted:
                 msg = st.empty()
                 msg.info('Creating...')
-                self.rc.hash_set(f'{APP_CODE}:{APP_ENV}:project:{self.username}',
-                                 str(uuid.uuid4()),
-                                 json.dumps({'project_name': project_name, 'members': members}))
+                if self.rc.redis_client.hexists(f'{APP_CODE}:{APP_ENV}:project', project_name):
+                    msg.error('Project name exist...')
+                    return
+                members.append(self.username)
+                self.rc.hash_set(f'{APP_CODE}:{APP_ENV}:project',
+                                 project_name,
+                                 json.dumps({'project_name': project_name, 'members': members,
+                                             'creator': self.username}))
                 msg.success('Created')
 
     def data(self):
@@ -57,8 +74,8 @@ class Project(Login):
             </style>
         """
         st.markdown(hide_table_row_index, unsafe_allow_html=True)
-        project = self.rc.redis_client.hvals(f'{APP_CODE}:{APP_ENV}:project:{self.username}')
-        st.table([json.loads(item) for item in project])
+        projects = self.get_project()
+        st.table(list(projects))
 
     def render(self):
         st.subheader('Project')
