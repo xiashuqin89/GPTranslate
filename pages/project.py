@@ -62,7 +62,7 @@ class Project(Login):
                 members.append(self.username)
                 self.rc.hash_set(f'{APP_CODE}:{APP_ENV}:project',
                                  project_name,
-                                 json.dumps({'project_name': project_name, 'members': members,
+                                 json.dumps({'project_name': project_name, 'members': list(set(members)),
                                              'creator': self.username}))
                 msg.success('Created')
 
