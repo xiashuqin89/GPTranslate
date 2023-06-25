@@ -66,6 +66,7 @@ class Engine(Login):
             self.term = st.multiselect('term', self.get_term(), label_visibility='hidden')
 
     def text_translate(self):
+        msg = st.empty()
         input_col1, input_col2 = st.columns(2)
         with input_col1:
             user_input = st.text_area('Your input', height=30)
@@ -84,6 +85,9 @@ class Engine(Login):
                                      term=self.term,
                                      project=self.project)
                 output = response.get('data', {}).get('result')
+                if output is None:
+                    output = 'no response'
+                    msg.error('the backend api error...')
             st.text_area('Chinese', output, placeholder=status)
 
     def file_translate(self, filename: str, extract_type: str, pure_text: str, bytes_data: bytes):
