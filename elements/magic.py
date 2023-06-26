@@ -51,8 +51,13 @@ def get_cookie_manager():
 
 
 def get_cookie_val(key: str) -> str:
-    cookie_manager = get_cookie_manager()
-    return cookie_manager.get(cookie=key)
+    headers = get_headers()
+    cookies = headers.get('Cookie', '')
+    try:
+        cookies = {item.split('=')[0]: item.split('=')[1] for item in cookies.split('; ')}
+    except IndexError:
+        return None
+    return cookies.get(key)
 
 
 def post_compile(title: str, domain: str):
@@ -70,7 +75,7 @@ class Login:
     def __init__(self):
         cookie_manager = get_cookie_manager()
         self.username = cookie_manager.get(cookie='bk_uid')
-        self.bk_ticket = cookie_manager.get(cookie='bk_ticket')
+        self.bk_ticket = get_cookie_val('bk_ticket')
         self.authenticate()
 
     def debug(self):
