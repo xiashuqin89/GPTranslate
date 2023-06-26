@@ -16,7 +16,7 @@ def translate(headers: Dict, method='translate', **params):
     extract_type
     """
     headers.update({'token': DOLPH_TOKEN, 'Content-Type': 'application/json'})
-    logger.info(f'headers: {headers}')
+    logger.error(f'headers: {headers}')
     logger.info(f'method: {method}')
     logger.info(f'params: {params}')
     response = requests.post(f'{DOLPH_ROOT}/{method}/',

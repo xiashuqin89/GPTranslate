@@ -99,7 +99,7 @@ class Engine(Login):
             "file": bytes_data.decode('latin-1'),
             "translate_type": self.model
         }
-        response = translate({'bk_ticket': self.bk_ticket}, 'translate_file', **params)
+        response = translate({'bkTicket': self.bk_ticket}, 'translate_file', **params)
         logger.debug(response)
         params.update({'pure_text': pure_text})
         self.rc.hash_set(f'{APP_CODE}:{APP_ENV}:record:{self.project}:{self.username}',
