@@ -88,8 +88,8 @@ class Engine(Login, Tool):
             "translate_type": self.model
         }
         response = translate({'bk_ticket': self.bk_ticket}, 'translate_file', **params)
-        logger.debug(response)
-        params.update({'pure_text': pure_text, 'task_id': response.get('task_id', '')})
+        logger.error(response)
+        params.update({'pure_text': pure_text, 'response': response.get('data', {})})
         self.rc.hash_set(f'{APP_CODE}:{APP_ENV}:record:{self.project}:{self.username}',
                          time.strftime('%Y-%m-%d %H:%M:%S'), json.dumps(params))
         return

@@ -71,8 +71,9 @@ class Record(Login, Tool):
             return return_ag.selected_rows
 
     def _status_handle(self, record: Dict, msg: DeltaGenerator):
-        task_id = record.get('task_id', '')
-        if task_id == '':
+        try:
+            task_id = record['response']['task_id']
+        except KeyError:
             msg.error('No task id found... or this is a old task...')
             return
         response = check_translate_status({'bk_ticket': self.bk_ticket}, 'check_status', task_id=task_id)
