@@ -70,9 +70,9 @@ class Record(Login, Tool):
                                update_mode=GridUpdateMode.SELECTION_CHANGED)
             return return_ag.selected_rows
 
-    def _status_handle(self, record: Dict, msg: DeltaGenerator):
+    def _status_handle(self, raw: Dict, msg: DeltaGenerator):
         try:
-            task_id = record['response']['task_id']
+            task_id = raw['response']['task_id']
         except KeyError:
             msg.error('No task id found... or this is a old task...')
             return
@@ -98,7 +98,7 @@ class Record(Login, Tool):
         })
 
         if data['count'] == 0:
-            self._status_handle(record, msg)
+            self._status_handle(raw, msg)
         else:
             msg.success('Translated')
             response = bk_repo.download('opsbot2', 'translate', f"target/{raw['file_name']}", stream=True)
