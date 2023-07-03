@@ -15,6 +15,7 @@ from elements.magic import Login
 from utils.db import RedisClient
 from exceptions import LoginFailedError
 from api.bkrepo import BKRepo
+from api.dolph import translate as check_translate_status
 from log import logger
 
 APP_CODE = os.getenv('BKPAAS_APP_ID')
@@ -43,7 +44,7 @@ class Record(Login):
         except json.JSONDecodeError:
             return {}
 
-    def siderbar(self):
+    def sidebar(self):
         st.sidebar.title('Project')
         project = self.get_project()
         self.project = st.sidebar.selectbox('Project', tuple(project))
@@ -89,7 +90,13 @@ class Record(Login):
         })
 
         if data['count'] == 0:
-            msg.info('Translate task still running...')
+            response = check_translate_status({'bk_ticket': self.bk_ticket}, 'check_status', task_id=record['task_id'])
+            if response['status'] == 'PROGRESS':
+                progress_text = f'Translate task still running... Total character: ' \
+                                f'{response["total"]}, complete: {response["current"]}'
+                st.progress(response["percent"], text=progress_text)
+            elif response['status'] == 'FAILURE':
+                msg.error('Translate task still failed...')
         else:
             msg.success('Translated')
             response = bk_repo.download('opsbot2', 'translate', f"target/{raw['file_name']}", stream=True)
@@ -129,7 +136,7 @@ class Record(Login):
         return pure_text
 
     def render(self):
-        self.siderbar()
+        self.sidebar()
         msg = st.empty()
         selected_rows = self.file_list()
         if selected_rows:
