@@ -18,34 +18,22 @@ from elements.magic import (
 )
 from api.dolph import translate
 from exceptions import LoginFailedError
-from utils.db import RedisClient
+from utils.stdlib import Tool
 from log import logger
 
 APP_CODE = os.getenv('BKPAAS_APP_ID')
 APP_ENV = os.getenv('BKPAAS_ENVIRONMENT')
 
 
-class Engine(Login):
+class Engine(Login, Tool):
     def __init__(self):
         super(Engine, self).__init__()
+        Tool.__init__(self)
         self.input_type = 'Text'
         self.project = ''
         self.language = ''
         self.model = ''
         self.term = ''
-        self.rc = RedisClient(env="prod")
-
-    def get_project(self):
-        projects = self.rc.redis_client.hvals(f'{APP_CODE}:{APP_ENV}:project')
-        if not projects:
-            return []
-        try:
-            for item in projects:
-                item = json.loads(item)
-                if self.username in item['members']:
-                    yield item['project_name']
-        except json.JSONDecodeError:
-            return []
 
     def get_term(self):
         return self.rc.redis_client.hkeys(f'{APP_CODE}:{APP_ENV}:term:{self.project}')
@@ -53,7 +41,7 @@ class Engine(Login):
     def menu(self):
         st.sidebar.text(self.username)
         st.sidebar.title('Menu')
-        project = self.get_project()
+        project = self.get_project(self.username, 'project_name')
         self.project = st.sidebar.selectbox('Project', tuple(project))
         self.input_type = st.sidebar.selectbox("Input Type", ('Text', 'File'))
 

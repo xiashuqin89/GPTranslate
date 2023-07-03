@@ -8,30 +8,18 @@ from settings import WHITE_MEMBERS
 from elements.magic import Login
 from exceptions import LoginFailedError
 from log import logger
-from utils.db import RedisClient
+from utils.stdlib import Tool
 
 
 APP_CODE = os.getenv('BKPAAS_APP_ID')
 APP_ENV = os.getenv('BKPAAS_ENVIRONMENT')
 
 
-class Project(Login):
+class Project(Login, Tool):
     def __init__(self):
         super(Project, self).__init__()
+        Tool.__init__(self)
         self.is_new = None
-        self.rc = RedisClient(env="prod")
-
-    def get_project(self):
-        projects = self.rc.redis_client.hvals(f'{APP_CODE}:{APP_ENV}:project')
-        if not projects:
-            return []
-        try:
-            for item in projects:
-                item = json.loads(item)
-                if self.username in item['members']:
-                    yield item
-        except json.JSONDecodeError:
-            return []
 
     def toolbar(self):
         tool_col1, tool_col2, _ = st.columns([2, 2, 8])
@@ -74,7 +62,7 @@ class Project(Login):
             </style>
         """
         st.markdown(hide_table_row_index, unsafe_allow_html=True)
-        projects = self.get_project()
+        projects = self.get_project(self.username)
         st.table(list(projects))
 
     def render(self):

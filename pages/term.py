@@ -9,35 +9,23 @@ from PIL import Image
 from elements.magic import Login
 from exceptions import LoginFailedError
 from log import logger
-from utils.db import RedisClient
+from utils.stdlib import Tool
 
 APP_CODE = os.getenv('BKPAAS_APP_ID')
 APP_ENV = os.getenv('BKPAAS_ENVIRONMENT')
 
 
-class Term(Login):
+class Term(Login, Tool):
     def __init__(self):
         super(Term, self).__init__()
+        Tool.__init__(self)
         self.project = ''
-        self.rc = RedisClient(env="prod")
-
-    def get_project(self):
-        projects = self.rc.redis_client.hvals(f'{APP_CODE}:{APP_ENV}:project')
-        if not projects:
-            return []
-        try:
-            for item in projects:
-                item = json.loads(item)
-                if self.username in item['members']:
-                    yield item['project_name']
-        except json.JSONDecodeError:
-            return []
 
     def sidebar(self):
         st.sidebar.title('Template')
         image = Image.open('media/term_template.png')
         st.sidebar.image(image, caption='edit excel like this')
-        project = tuple(self.get_project())
+        project = tuple(self.get_project(self.username, 'project_name'))
         self.project = st.sidebar.selectbox('Project', project)
 
     def toolbar(self):

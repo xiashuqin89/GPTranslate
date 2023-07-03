@@ -12,27 +12,21 @@ from streamlit.delta_generator import DeltaGenerator
 from st_aggrid import AgGrid, GridUpdateMode, GridOptionsBuilder
 
 from elements.magic import Login
-from utils.db import RedisClient
 from exceptions import LoginFailedError
 from api.bkrepo import BKRepo
 from api.dolph import translate as check_translate_status
 from log import logger
+from utils.stdlib import Tool
 
 APP_CODE = os.getenv('BKPAAS_APP_ID')
 APP_ENV = os.getenv('BKPAAS_ENVIRONMENT')
 
 
-class Record(Login):
+class Record(Login, Tool):
     def __init__(self):
         super(Record, self).__init__()
+        Tool.__init__(self)
         self.project = ''
-        self.rc = RedisClient(env="prod")
-
-    def get_project(self):
-        project = self.rc.redis_client.hvals(f'{APP_CODE}:{APP_ENV}:project:{self.username}')
-        if not project:
-            return []
-        return [json.loads(item)['project_name'] for item in project]
 
     def get_record_list(self) -> Dict:
         return self.rc.redis_client.hgetall(f'{APP_CODE}:{APP_ENV}:record:{self.project}:{self.username}')
@@ -46,7 +40,7 @@ class Record(Login):
 
     def sidebar(self):
         st.sidebar.title('Project')
-        project = self.get_project()
+        project = self.get_project(self.username, 'project_name')
         self.project = st.sidebar.selectbox('Project', tuple(project))
 
     def file_list(self):
