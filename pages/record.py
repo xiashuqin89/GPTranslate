@@ -76,6 +76,19 @@ class Record(Login):
                                update_mode=GridUpdateMode.SELECTION_CHANGED)
             return return_ag.selected_rows
 
+    def _status_handle(self, record: Dict, msg: DeltaGenerator):
+        task_id = record.get('task_id', '')
+        if task_id == '':
+            msg.error('No task id found... or this is a old task...')
+            return
+        response = check_translate_status({'bk_ticket': self.bk_ticket}, 'check_status', task_id=task_id)
+        if response['status'] == 'PROGRESS':
+            progress_text = f'Translate task still running... Total character: ' \
+                            f'{response["total"]}, complete: {response["current"]}'
+            st.progress(response["percent"], text=progress_text)
+        elif response['status'] == 'FAILURE':
+            msg.error('Translate task still failed...')
+
     def file_diff(self, record: Dict, msg: DeltaGenerator):
         raw = self.get_record(record['time'])
         bk_repo = BKRepo()
@@ -90,13 +103,7 @@ class Record(Login):
         })
 
         if data['count'] == 0:
-            response = check_translate_status({'bk_ticket': self.bk_ticket}, 'check_status', task_id=record['task_id'])
-            if response['status'] == 'PROGRESS':
-                progress_text = f'Translate task still running... Total character: ' \
-                                f'{response["total"]}, complete: {response["current"]}'
-                st.progress(response["percent"], text=progress_text)
-            elif response['status'] == 'FAILURE':
-                msg.error('Translate task still failed...')
+            self._status_handle(record, msg)
         else:
             msg.success('Translated')
             response = bk_repo.download('opsbot2', 'translate', f"target/{raw['file_name']}", stream=True)
