@@ -77,11 +77,13 @@ class Record(Login, Tool):
             msg.error('No task id found... or this is a old task...')
             return
         response = check_translate_status({'bk_ticket': self.bk_ticket}, 'check_status', task_id=task_id)
-        if response['status'] == 'PROGRESS':
+        data = response.get('data', {'status': 'PENDING'})
+        if data['status'] == 'PROGRESS':
+            result = data["result"]
             progress_text = f'Translate task still running... Total character: ' \
-                            f'{response["total"]}, complete: {response["current"]}'
-            st.progress(response["percent"], text=progress_text)
-        elif response['status'] == 'FAILURE':
+                            f'{result["total"]}, complete: {result["current"]}'
+            st.progress(result["percent"], text=progress_text)
+        elif data['status'] == 'FAILURE':
             msg.error('Translate task still failed...')
 
     def file_diff(self, record: Dict, msg: DeltaGenerator):
