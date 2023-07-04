@@ -1,11 +1,10 @@
 import os
 import json
-import uuid
 
 import streamlit as st
 
-from settings import WHITE_MEMBERS
-from elements.magic import Login
+from settings import WHITE_MEMBERS, DOMAIN
+from elements.magic import Login, post_compile
 from exceptions import LoginFailedError
 from log import logger
 from utils.stdlib import Tool
@@ -73,6 +72,7 @@ class Project(Login, Tool):
         self.data()
 
 
+@post_compile('ko2cn', DOMAIN)
 def main():
     try:
         Project().render()

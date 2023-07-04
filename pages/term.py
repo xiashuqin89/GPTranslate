@@ -6,7 +6,8 @@ import streamlit as st
 import pandas as pd
 from PIL import Image
 
-from elements.magic import Login
+from settings import DOMAIN
+from elements.magic import Login, post_compile
 from exceptions import LoginFailedError
 from log import logger
 from utils.stdlib import Tool
@@ -71,6 +72,7 @@ class Term(Login, Tool):
         self.data()
 
 
+@post_compile('ko2cn', DOMAIN)
 def main():
     try:
         Term().render()

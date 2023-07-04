@@ -111,20 +111,6 @@ class Engine(Login, Tool):
             return filename, extract_type, pure_text, bytes_data
         return None
 
-    def excel2text(self, data: bytes):
-        pure_text = ''
-        sheets = pd.read_excel(data, sheet_name=None)
-        for k, v in sheets.items():
-            pure_text += k
-            for row in v.values.tolist():
-                for col in row:
-                    if col is np.nan or str(col) == 'nan':
-                        pure_text += ' '
-                    else:
-                        pure_text += str(col)
-                pure_text += '\n'
-        return pure_text
-
     def render(self):
         st.title('Bkchatranslate')
         self.menu()

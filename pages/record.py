@@ -11,12 +11,13 @@ from docx import Document
 from streamlit.delta_generator import DeltaGenerator
 from st_aggrid import AgGrid, GridUpdateMode, GridOptionsBuilder
 
-from elements.magic import Login
+from elements.magic import Login, post_compile
 from exceptions import LoginFailedError
 from api.bkrepo import BKRepo
 from api.dolph import translate as check_translate_status
 from log import logger
 from utils.stdlib import Tool
+from settings import SUPERUSER, WHITE_MEMBERS, DOMAIN
 
 APP_CODE = os.getenv('BKPAAS_APP_ID')
 APP_ENV = os.getenv('BKPAAS_ENVIRONMENT')
@@ -27,12 +28,13 @@ class Record(Login, Tool):
         super(Record, self).__init__()
         Tool.__init__(self)
         self.project = ''
+        self.query = self.username
 
     def get_record_list(self) -> Dict:
-        return self.rc.redis_client.hgetall(f'{APP_CODE}:{APP_ENV}:record:{self.project}:{self.username}')
+        return self.rc.redis_client.hgetall(f'{APP_CODE}:{APP_ENV}:record:{self.project}:{self.query}')
 
     def get_record(self, key: str) -> Dict:
-        data = self.rc.hash_get(f'{APP_CODE}:{APP_ENV}:record:{self.project}:{self.username}', key)
+        data = self.rc.hash_get(f'{APP_CODE}:{APP_ENV}:record:{self.project}:{self.query}', key)
         try:
             return json.loads(data)
         except json.JSONDecodeError:
@@ -42,6 +44,10 @@ class Record(Login, Tool):
         st.sidebar.title('Project')
         project = self.get_project(self.username, 'project_name')
         self.project = st.sidebar.selectbox('Project', tuple(project))
+        if self.username in SUPERUSER:
+            admin = st.sidebar.selectbox('Members', WHITE_MEMBERS)
+            if st.sidebar.button('GM', use_container_width=True):
+                self.query = admin
 
     def file_list(self):
         with st.spinner('Wait for loading...'):
@@ -84,7 +90,7 @@ class Record(Login, Tool):
                             f'{result["total"]}, complete: {result["current"]}'
             st.progress(result["percent"], text=progress_text)
         elif data['status'] == 'FAILURE':
-            msg.error('Translate task still failed...')
+            msg.error('Translate task absolutely failed...')
 
     def file_diff(self, record: Dict, msg: DeltaGenerator):
         raw = self.get_record(record['time'])
@@ -125,20 +131,6 @@ class Record(Login, Tool):
             mime=f'text/{extract_type}',
         )
 
-    def excel2text(self, data: bytes):
-        pure_text = ''
-        sheets = pd.read_excel(data, sheet_name=None)
-        for k, v in sheets.items():
-            pure_text += k
-            for row in v.values.tolist():
-                for col in row:
-                    if col is np.nan or str(col) == 'nan':
-                        pure_text += ' '
-                    else:
-                        pure_text += str(col)
-                pure_text += '\n'
-        return pure_text
-
     def render(self):
         self.sidebar()
         msg = st.empty()
@@ -147,6 +139,7 @@ class Record(Login, Tool):
             self.file_diff(selected_rows[0], msg)
 
 
+@post_compile('ko2cn', DOMAIN)
 def main():
     try:
         Record().render()
