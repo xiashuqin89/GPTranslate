@@ -1,5 +1,4 @@
 import os
-import io
 import json
 import time
 from typing import Tuple
@@ -7,7 +6,6 @@ from typing import Tuple
 import streamlit as st
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 from streamlit.delta_generator import DeltaGenerator
-from docx import Document
 from langdetect import detect
 
 from settings import DOMAIN, LANGUAGE, MODEL
@@ -17,6 +15,7 @@ from elements.magic import (
 from api.dolph import translate
 from exceptions import LoginFailedError
 from utils.stdlib import Tool
+from utils.parser import FileParser
 from log import logger
 
 APP_CODE = os.getenv('BKPAAS_APP_ID')
@@ -97,14 +96,9 @@ class Engine(Login, Tool):
             msg.info('Parsing...')
             pure_text, bytes_data = '', uploaded_file.getvalue()
             filename = uploaded_file.name
-            extract_type = ''
-            if uploaded_file.name.endswith('xlsx'):
-                extract_type = 'xlsx'
-                pure_text = self.excel2text(uploaded_file)
-            elif uploaded_file.name.endswith('docx'):
-                extract_type = 'docx'
-                source_stream = Document(io.BytesIO(bytes_data))
-                pure_text = '\n'.join([para.text for para in source_stream.paragraphs])
+            parser = FileParser(uploaded_file.name)
+            extract_type = parser.filetype
+            pure_text = parser.tostring(bytes_data)
             return filename, extract_type, pure_text, bytes_data
         return None
 

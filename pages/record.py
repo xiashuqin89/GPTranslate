@@ -1,12 +1,10 @@
 import os
-import io
 import json
 from typing import Dict
 
 import pandas as pd
 import streamlit as st
 import diff_viewer
-from docx import Document
 from streamlit.delta_generator import DeltaGenerator
 from st_aggrid import AgGrid, GridUpdateMode, GridOptionsBuilder
 
@@ -16,6 +14,7 @@ from api.bkrepo import BKRepo
 from api.dolph import translate as check_translate_status
 from log import logger
 from utils.stdlib import Tool
+from utils.parser import FileParser
 from settings import SUPERUSER, WHITE_MEMBERS, DOMAIN
 
 APP_CODE = os.getenv('BKPAAS_APP_ID')
@@ -112,13 +111,9 @@ class Record(Login, Tool):
             msg.success('Translated')
             response = bk_repo.download('opsbot2', 'translate', f"target/{raw['file_name']}", stream=True)
             bytes_data = response.content
-            new_text = ''
-            if raw['extract_type'] == 'xlsx':
-                new_text = self.excel2text(bytes_data)
-            elif raw['extract_type'] == 'docx':
-                source_stream = Document(io.BytesIO(bytes_data))
-                new_text = '\n'.join([para.text for para in source_stream.paragraphs])
-
+            parser = FileParser()
+            parser.filetype = raw['extract_type']
+            new_text = parser.tostring(bytes_data)
             self.file_download(record['filename'], raw['extract_type'], bytes_data)
             diff_viewer.diff_viewer(old_text=raw['pure_text'],
                                     new_text=new_text,
