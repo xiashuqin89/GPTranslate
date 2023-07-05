@@ -98,7 +98,6 @@ class Engine(Login, Tool):
             pure_text, bytes_data = '', uploaded_file.getvalue()
             filename = uploaded_file.name
             extract_type = ''
-            print(uploaded_file.name)
             if uploaded_file.name.endswith('xlsx'):
                 extract_type = 'xlsx'
                 pure_text = self.excel2text(uploaded_file)
