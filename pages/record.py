@@ -4,7 +4,6 @@ import json
 from typing import Dict
 
 import pandas as pd
-import numpy as np
 import streamlit as st
 import diff_viewer
 from docx import Document
@@ -91,6 +90,8 @@ class Record(Login, Tool):
             st.progress(result["percent"], text=progress_text)
         elif data['status'] == 'FAILURE':
             msg.error('Translate task absolutely failed...')
+        elif data['status'] == 'PENDING':
+            msg.error('Translate task is pending now, maybe task queue is blocked...')
 
     def file_diff(self, record: Dict, msg: DeltaGenerator):
         raw = self.get_record(record['time'])

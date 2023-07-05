@@ -7,8 +7,6 @@ from typing import Tuple
 import streamlit as st
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 from streamlit.delta_generator import DeltaGenerator
-import pandas as pd
-import numpy as np
 from docx import Document
 from langdetect import detect
 
