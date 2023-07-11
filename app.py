@@ -98,6 +98,9 @@ class Engine(Login, Tool):
             filename = uploaded_file.name
             parser = FileParser(uploaded_file.name)
             extract_type = parser.filetype
+            # temp transfer txt/pdf to docx
+            if extract_type in ['txt', 'pdf']:
+                extract_type = 'docx'
             pure_text = parser.tostring(bytes_data)
             return filename, extract_type, pure_text, bytes_data
         return None
@@ -108,7 +111,7 @@ class Engine(Login, Tool):
         if self.input_type == 'Text':
             self.text_translate()
         elif self.input_type == 'File':
-            uploaded_file = st.file_uploader("Choose a file", type=['xlsx', 'docx'])
+            uploaded_file = st.file_uploader("Choose a file", type=['xlsx', 'docx', 'pdf', 'txt'])
             msg = st.empty()
             if st.button('Submit', use_container_width=True):
                 file_info = self.file_parse(uploaded_file, msg)

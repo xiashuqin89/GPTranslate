@@ -7,3 +7,4 @@ openpyxl
 python-docx
 tencentcloud-sdk-python
 redis==3.5.3
+PyPDF2==3.0.1

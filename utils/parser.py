@@ -2,6 +2,7 @@ import io
 
 import pandas as pd
 import numpy as np
+from PyPDF2 import PdfReader
 from docx import Document
 
 
@@ -66,4 +67,22 @@ class DocxParser:
 
 
 class TxtParser:
+    @staticmethod
+    def tostring(data: bytes):
+        return data.decode('utf-8')
+
+
+class SqlParser:
     pass
+
+
+class X16Parser:
+    pass
+
+
+class PdfParser:
+    @staticmethod
+    def tostring(data: bytes):
+        pdf_reader = PdfReader(io.BytesIO(data))
+        content = [page.extract_text() for page in pdf_reader.pages]
+        return '\n'.join(content)
