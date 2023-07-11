@@ -56,23 +56,28 @@ class Record(Login, Tool):
             if st.sidebar.button('GM', use_container_width=True):
                 self.query = admin
 
-    def toolbar(self, toolbar: DeltaGenerator, msg: DeltaGenerator, selected_rows: List):
+    def toolbar(self, toolbar: DeltaGenerator, msg: DeltaGenerator, selected_rows: List) -> str:
+        action = ''
         col1, col2, col3, col4, _ = toolbar.columns([1, 1, 1, 1, 5])
         with col1:
             st.button('refresh', use_container_width=True)
 
         if not selected_rows:
             msg.info('please click a row')
-            return
+            return action
 
         with col2:
             if st.button('check', use_container_width=True):
-                with st.spinner('parsing'):
-                    self.file_diff(selected_rows[0], msg)
+                action = 'check'
         with col3:
-            st.button('retry', use_container_width=True)
+            if st.button('retry', use_container_width=True):
+                msg.info('unsupported now')
+                action = 'retry'
         with col4:
-            st.button('stop', use_container_width=True)
+            if st.button('stop', use_container_width=True):
+                msg.info('unsupported now')
+                action = 'stop'
+        return action
 
     def file_list(self):
         with st.spinner('Wait for loading...'):
@@ -162,7 +167,10 @@ class Record(Login, Tool):
         msg = st.empty()
         toolbar = st.empty()
         selected_rows = self.file_list()
-        self.toolbar(toolbar, msg, selected_rows)
+        action = self.toolbar(toolbar, msg, selected_rows)
+        if action == 'check':
+            with st.spinner('parsing'):
+                self.file_diff(selected_rows[0], msg)
 
 
 @post_compile('ko2cn', DOMAIN)
