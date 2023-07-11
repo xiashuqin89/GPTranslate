@@ -1,6 +1,6 @@
 import os
 import json
-from typing import Dict
+from typing import Dict, List, Generator
 
 import pandas as pd
 import streamlit as st
@@ -28,8 +28,14 @@ class Record(Login, Tool):
         self.project = ''
         self.query = self.username
 
-    def get_record_list(self) -> Dict:
-        return self.rc.redis_client.hgetall(f'{APP_CODE}:{APP_ENV}:record:{self.project}:{self.query}')
+    def get_record_list(self) -> Generator:
+        data = self.rc.redis_client.hgetall(f'{APP_CODE}:{APP_ENV}:record:{self.project}:{self.query}')
+        for k, v in data.items():
+            try:
+                detail = json.loads(v)
+            except json.JSONDecodeError:
+                continue
+            yield {'time': k, 'filename': detail['file_name'], 'status': detail.get('status', 'PENDING')}
 
     def get_record(self, key: str) -> Dict:
         data = self.rc.hash_get(f'{APP_CODE}:{APP_ENV}:record:{self.project}:{self.query}', key)
@@ -37,6 +43,9 @@ class Record(Login, Tool):
             return json.loads(data)
         except json.JSONDecodeError:
             return {}
+
+    def set_record(self, key, data):
+        self.rc.hash_set(f'{APP_CODE}:{APP_ENV}:record:{self.project}:{self.query}', key, json.dumps(data))
 
     def sidebar(self):
         st.sidebar.title('Project')
@@ -47,17 +56,32 @@ class Record(Login, Tool):
             if st.sidebar.button('GM', use_container_width=True):
                 self.query = admin
 
+    def toolbar(self, toolbar: DeltaGenerator, msg: DeltaGenerator, selected_rows: List):
+        col1, col2, col3, col4, _ = toolbar.columns([1, 1, 1, 1, 5])
+        with col1:
+            st.button('refresh', use_container_width=True)
+
+        if not selected_rows:
+            msg.info('please click a row')
+            return
+
+        with col2:
+            if st.button('check', use_container_width=True):
+                with st.spinner('parsing'):
+                    self.file_diff(selected_rows[0], msg)
+        with col3:
+            st.button('retry', use_container_width=True)
+        with col4:
+            st.button('stop', use_container_width=True)
+
     def file_list(self):
         with st.spinner('Wait for loading...'):
-            data = self.get_record_list() or {}
-            if data:
-                st.subheader('Record')
-            else:
-                st.subheader('Record')
+            data = sorted(self.get_record_list(), key=lambda x: x['time'], reverse=True) or []
+            if not data:
                 st.warning('No Record')
                 return
+            data = pd.DataFrame(data)
 
-            data = pd.DataFrame([{'time': k, 'filename': json.loads(v)['file_name']} for k, v in data.items()])
             gb = GridOptionsBuilder.from_dataframe(data)
             gb.configure_selection(selection_mode='single')
             gb.configure_auto_height()
@@ -74,12 +98,12 @@ class Record(Login, Tool):
                                update_mode=GridUpdateMode.SELECTION_CHANGED)
             return return_ag.selected_rows
 
-    def _status_handle(self, raw: Dict, msg: DeltaGenerator):
+    def _status_handle(self, raw: Dict, msg: DeltaGenerator) -> str:
         try:
             task_id = raw['response']['task_id']
         except KeyError:
             msg.error('No task id found... or this is a old task...')
-            return
+            return 'UNKNOWN'
         response = check_translate_status({'bk_ticket': self.bk_ticket}, 'check_status', task_id=task_id)
         data = response.get('data', {'status': 'PENDING'})
         if data['status'] == 'PROGRESS':
@@ -91,6 +115,7 @@ class Record(Login, Tool):
             msg.error('Translate task absolutely failed...')
         elif data['status'] == 'PENDING':
             msg.info('Translate task is pending now, maybe task queue is blocked...')
+        return data['status']
 
     def file_diff(self, record: Dict, msg: DeltaGenerator):
         raw = self.get_record(record['time'])
@@ -106,18 +131,22 @@ class Record(Login, Tool):
         })
 
         if data['count'] == 0:
-            self._status_handle(raw, msg)
+            status = self._status_handle(raw, msg)
         else:
             msg.success('Translated')
+            status = 'SUCCESS'
             response = bk_repo.download('opsbot2', 'translate', f"target/{raw['file_name']}", stream=True)
             bytes_data = response.content
             parser = FileParser()
             parser.filetype = raw['extract_type']
             new_text = parser.tostring(bytes_data)
+            # mv download link to bkrepo
             self.file_download(record['filename'], raw['extract_type'], bytes_data)
             diff_viewer.diff_viewer(old_text=raw['pure_text'],
                                     new_text=new_text,
                                     lang='python')
+        raw.update({'status': status})
+        self.set_record(record['time'], raw)
 
     def file_download(self, filename: str, extract_type: str, data: bytes):
         st.download_button(
@@ -128,11 +157,12 @@ class Record(Login, Tool):
         )
 
     def render(self):
+        st.subheader('Record')
         self.sidebar()
         msg = st.empty()
+        toolbar = st.empty()
         selected_rows = self.file_list()
-        if selected_rows:
-            self.file_diff(selected_rows[0], msg)
+        self.toolbar(toolbar, msg, selected_rows)
 
 
 @post_compile('ko2cn', DOMAIN)
