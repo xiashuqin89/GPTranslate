@@ -75,11 +75,10 @@ class Record(Login, Tool):
                 action = 'retry'
         with col4:
             if st.button('stop', use_container_width=True):
-                msg.info('unsupported now')
                 action = 'stop'
         return action
 
-    def file_list(self):
+    def file_list(self, reload_data=True):
         with st.spinner('Wait for loading...'):
             data = sorted(self.get_record_list(), key=lambda x: x['time'], reverse=True) or []
             if not data:
@@ -97,7 +96,7 @@ class Record(Login, Tool):
                                enable_quicksearch=True,
                                gridOptions=go,
                                allow_unsafe_jscode=True,
-                               reload_data=False,
+                               reload_data=reload_data,
                                use_legacy_selected_rows=True,
                                fit_columns_on_grid_load=True,
                                update_mode=GridUpdateMode.SELECTION_CHANGED)
@@ -161,6 +160,12 @@ class Record(Login, Tool):
             mime=f'text/{extract_type}',
         )
 
+    def stop(self, record: Dict, msg: DeltaGenerator):
+        raw = self.get_record(record['time'])
+        raw.update({'status': 'FAILURE'})
+        self.set_record(record['time'], raw)
+        msg.info('record stopped')
+
     def render(self):
         st.subheader('Record')
         self.sidebar()
@@ -171,6 +176,8 @@ class Record(Login, Tool):
         if action == 'check':
             with st.spinner('parsing'):
                 self.file_diff(selected_rows[0], msg)
+        if action == 'stop':
+            self.stop(selected_rows[0], msg)
 
 
 @post_compile('ko2cn', DOMAIN)
