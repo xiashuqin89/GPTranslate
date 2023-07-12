@@ -78,7 +78,7 @@ class Record(Login, Tool):
                 action = 'stop'
         return action
 
-    def file_list(self, reload_data=True):
+    def file_list(self, reload_data=False):
         with st.spinner('Wait for loading...'):
             data = sorted(self.get_record_list(), key=lambda x: x['time'], reverse=True) or []
             if not data:
@@ -164,7 +164,6 @@ class Record(Login, Tool):
         raw = self.get_record(record['time'])
         raw.update({'status': 'FAILURE'})
         self.set_record(record['time'], raw)
-        msg.info('record stopped')
 
     def render(self):
         st.subheader('Record')
@@ -178,6 +177,7 @@ class Record(Login, Tool):
                 self.file_diff(selected_rows[0], msg)
         if action == 'stop':
             self.stop(selected_rows[0], msg)
+            st.experimental_rerun()
 
 
 @post_compile('ko2cn', DOMAIN)
