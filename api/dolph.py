@@ -8,7 +8,10 @@ from settings import DOLPH_ROOT, DOLPH_TOKEN
 from log import logger
 
 
-def translate(headers: Dict, method='translate', **params):
+def translate(headers: Dict,
+              function: str = 'translate',
+              method: str = 'post',
+              **params):
     """
     text
     translate_type: qcloud/chatgpt
@@ -21,9 +24,14 @@ def translate(headers: Dict, method='translate', **params):
         # client.headers = {'Content-Type': 'application/json'}
         client.headers.update(headers)
         logger.info(f'headers: {headers}')
-        response = client.post(f'{DOLPH_ROOT}/{method}/',
-                               headers=headers,
-                               data=json.dumps(params))
+        if method == 'post':
+            response = client.post(f'{DOLPH_ROOT}/{function}/',
+                                   headers=headers,
+                                   data=json.dumps(params))
+        else:
+            response = client.get(f'{DOLPH_ROOT}/{function}/',
+                                  headers=headers,
+                                  params=json.dumps(params))
         try:
             return response.json()
         except json.JSONDecodeError:

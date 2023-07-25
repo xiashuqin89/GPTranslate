@@ -65,6 +65,7 @@ class Engine(Login, Tool):
             if user_input != '':
                 status = 'translating...'
                 response = translate({'bk_ticket': self.bk_ticket},
+                                     'text/translate',
                                      text=user_input,
                                      translate_type=self.model,
                                      term=self.term,
@@ -84,7 +85,7 @@ class Engine(Login, Tool):
             "file": bytes_data.decode('latin-1'),
             "translate_type": self.model
         }
-        response = translate({'bk_ticket': self.bk_ticket}, 'translate_file', **params)
+        response = translate({'bk_ticket': self.bk_ticket}, 'file/translate', **params)
         logger.error(response)
         params.update({'pure_text': pure_text, 'response': response.get('data', {})})
         self.rc.hash_set(f'{APP_CODE}:{APP_ENV}:record:{self.project}:{self.username}',

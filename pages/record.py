@@ -108,7 +108,7 @@ class Record(Login, Tool):
         except KeyError:
             msg.error('No task id found... or this is a old task...')
             return 'UNKNOWN'
-        response = check_translate_status({'bk_ticket': self.bk_ticket}, 'check_status', task_id=task_id)
+        response = check_translate_status({'bk_ticket': self.bk_ticket}, f'task/{task_id}', 'get')
         data = response.get('data', {'status': 'PENDING'})
         if data['status'] == 'PROGRESS':
             result = data["result"]
