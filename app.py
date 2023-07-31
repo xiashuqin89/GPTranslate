@@ -99,9 +99,6 @@ class Engine(Login, Tool):
             filename = uploaded_file.name
             parser = FileParser(uploaded_file.name)
             extract_type = parser.filetype
-            # temp transfer txt/pdf to docx
-            if extract_type in ['txt', 'pdf']:
-                extract_type = 'docx'
             pure_text = parser.tostring(bytes_data)
             return filename, extract_type, pure_text, bytes_data
         return None
