@@ -118,7 +118,7 @@ class Record(Login, Tool):
         elif data['status'] == 'FAILURE':
             msg.error('Translate task absolutely failed...')
         elif data['status'] == 'PENDING':
-            msg.info('Translate task is pending now, maybe task queue is blocked...')
+            msg.info('Translate task is ready to start, maybe task queue is blocked...')
         return data['status']
 
     def file_diff(self, record: Dict, msg: DeltaGenerator):
